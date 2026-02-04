@@ -28,6 +28,24 @@ class OrderSheetExport implements FromView, ShouldAutoSize, WithTitle
             $query->where('status_id', $this->filters['export_status']);
         }
 
+        if (!empty($this->filters['export_mkdt_by'])) {
+            $query->whereHas('item', function ($q) {
+                $q->where('mkdt_by', $this->filters['export_mkdt_by']);
+            });
+        }
+
+        if (!empty($this->filters['export_mfg_by'])) {
+            $query->whereHas('item', function ($q) {
+                $q->where('mfg_by', $this->filters['export_mfg_by']);
+            });
+        }
+
+        if (!empty($this->filters['client'])) {
+            $query->whereHas('item', function ($q) {
+                $q->where('mfg_by', $this->filters['client']);
+            });
+        }
+
         if (!empty($this->filters['export_po_date'])) {
             $dateRange = str_replace(' to ', ' - ', $this->filters['export_po_date']);
             $dates = explode(' - ', $dateRange);
@@ -49,6 +67,6 @@ class OrderSheetExport implements FromView, ShouldAutoSize, WithTitle
 
     public function title(): string
     {
-        return 'PO Items';
+        return 'Order Sheet';
     }
 }

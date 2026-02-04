@@ -88,27 +88,12 @@ tbody tr:not(.process-start) td {
 
             <div class="card-body border border-dashed border-end-0 border-start-0">
 
+ {{ html()->form('POST', route('admin.common.export.module'))->attribute('enctype', 'multipart/form-data')->id('storeForm')->open() }}
 
 
+            <div class="d-flex gap-2">
 
-            <div class="row">
-
-                {{-- <div class="w-75">
-                    <div class="m-0 form-group{{ $errors->has('filter_mfg_by') ? ' has-error' : '' }}">
-                        {{ html()->select('filter_mfg_by', [])->id('filterMFGBY')->class('filterClient form-control onChange')->placeholder('MFG By') }}
-                        <small class="text-danger">{{ $errors->first('filter_mfg_by') }}</small>
-                    </div>
-                </div>
-
-
-                <div class="w-75">
-                    <div class="m-0 form-group{{ $errors->has('filter_mkdt_by') ? ' has-error' : '' }}">
-                        {{ html()->select('filter_mkdt_by', [])->id('filterMKDTBY')->class('filterClient form-control onChange')->placeholder('MKDT By') }}
-                        <small class="text-danger">{{ $errors->first('filter_mkdt_by') }}</small>
-                    </div>
-                </div> --}}
-
-                <div class="col-md-3 col-sm-12">
+                <div class="w-50">
                     <div class="search-box">
                         <div class="m-0 form-group{{ $errors->has('filter_job_no') ? ' has-error' : '' }}">
                             {{ html()->search('filter_job_no')->class('form-control onKeyup')->id('filterJobNo')->placeholder('Job No.') }}
@@ -119,7 +104,7 @@ tbody tr:not(.process-start) td {
                 </div>
 
 
-                <div class="col-md-3 col-sm-12">
+                <div class="w-50">
                     <div class="search-box">
                         <div class="m-0 form-group{{ $errors->has('filter_item_name') ? ' has-error' : '' }}">
                             {{ html()->search('filter_item_name')->class('form-control onKeyup')->id('filterItemName')->placeholder('Item Name') }}
@@ -129,7 +114,7 @@ tbody tr:not(.process-start) td {
                     </div>
                 </div>
 
-                <div class="col-md-3 col-sm-12">
+                <div class="w-50">
                     <div class="m-0 form-group{{ $errors->has('filter_operator') ? ' has-error' : '' }}">
                         {{ html()->select('filter_operator', App\Models\Operator::orderBy('name', 'asc')->where('module_id', 1)->pluck('name', 'id'))->id('filterOperator')->class('form-control onChange js-choice')->placeholder('Choose Operator') }}
                         <small class="text-danger">{{ $errors->first('filter_operator') }}</small>
@@ -138,15 +123,23 @@ tbody tr:not(.process-start) td {
 
 
 
-                <div class="col-md-3 col-sm-12">
+                <div class="w-50">
                     <div class="m-0 form-group{{ $errors->has('filterStatus') ? ' has-error' : '' }}">
-                        {{ html()->select('filterStatus', App\Models\Status::whereIn('id', [1,3])->pluck('name', 'id'), 1)->id('filterStatus')->class('form-control js-choice onChange')->placeholder('Status') }}
+                        {{ html()->select('filter_status', App\Models\Status::whereIn('id', [1,3])->pluck('name', 'id'), 1)->id('filterStatus')->class('form-control js-choice onChange')->placeholder('Status') }}
                         <small class="text-danger">{{ $errors->first('filterStatus') }}</small>
                     </div>
                 </div>
 
+                {{ html()->hidden('module', 'PaperCutting') }}
+
+                <div style="width:320px;">
+                    
+                    {{ html()->button('Export')->type('button')->class('w-100 btn btn-soft-success')->attribute('onclick = downloadExcel(this)') }}
+                </div>
+
 
             </div>
+            {{ html()->form()->close() }}
         </div>
 
 

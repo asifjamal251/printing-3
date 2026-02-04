@@ -184,6 +184,7 @@ tbody tr:not(.process-start) td {
                                 <th>Job No.</th>
                                 <th>MFG BY<br>MKDT BY</th>
                                 <th>Item</th>
+                                <th>Die Counter</th>
                                 <th>PO Quantity</th>
                                 <th>Dye Details</th>
                                 <th>Pasted Quantity</th>
@@ -249,6 +250,7 @@ tbody tr:not(.process-start) td {
                 { "data": "job" },
                 { "data": "mfg_mkdt_by" },
                 { "data": "item" },
+                { "data": "dye_counter" },
                 { "data": "po_quantity" },
                 { "data": "die_details" },
                 { "data": "pasted_quantity" },

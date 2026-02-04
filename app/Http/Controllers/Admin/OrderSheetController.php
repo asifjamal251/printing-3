@@ -452,6 +452,9 @@ public function store(Request $request)
         $filters = $request->only([
             'export_status',
             'export_po_date',
+            'export_clients',
+            'export_mfg_by',
+            'export_mkdt_by',
         ]);
 
         $filename = 'order_sheet.xlsx';

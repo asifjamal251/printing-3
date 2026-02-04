@@ -164,6 +164,13 @@ tbody tr:not(.process-start) td {
                             </div>
                         </div>
 
+                        <div style="width:120px;">
+                            <div class="m-0 form-group{{ $errors->has('filter__length') ? ' has-error' : '' }}">
+                                {{ html()->select('filter__length', [25 => 25, 50 => 50, 100 => 100, 150 => 150, 200 => 200], 25)->id('filterLength')->class('form-control onChange js-choice') }}
+                                <small class="text-danger">{{ $errors->first('filter__length') }}</small>
+                            </div>
+                        </div>
+
 
                     </div>
                 </div>
@@ -237,6 +244,7 @@ tbody tr:not(.process-start) td {
                     d.item_size = $('#filterItemSize').val();
                     d.set_no    = $('#filterItemSetNo').val();
                     d.status    = $('#filterStatus').val();
+                     d.length = $('#filterLength').val();
                 }
 
             },

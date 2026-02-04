@@ -24,7 +24,7 @@ class EmbossingResource extends JsonResource
         return [
             'sn'        => ++$request->start,
             'id'        => $this->id,
-            'job'       => $this->jobCard->set_number,
+            'job'       => '<a href="'.route('admin.job-card.show', $this->jobCard->id).'">'.$this->jobCard->set_number.'</a>',
             'file'       => '--',
             'printing' => $this->jobCard->printing,
             

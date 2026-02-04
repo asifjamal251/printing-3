@@ -52,7 +52,7 @@ class PastingResource extends JsonResource
         return [
             'sn'   => ++$request->start,
             'id'   => $this->id,
-            'job'  => $this->jobCard->set_number,
+            'job'       => '<a href="'.route('admin.job-card.show', $this->jobCard->id).'">'.$this->jobCard->set_number.'</a>',
             'file' => '--',
 
             'mfg_mkdt_by' => '
@@ -64,6 +64,7 @@ class PastingResource extends JsonResource
 
             'item' => $this->item?->item_name,
 
+            'dye_counter' => $this->stage->in_counter  ?? 0,
             'po_quantity' => $poQty,
 
             'pasted_quantity' => sprintf(

@@ -22,13 +22,13 @@
 
         @endcan
 
-         @can('edit_purchase_order')
-            <li><a class="dropdown-item" href="#" id="contextEdit"><i class="ri-pencil-fill me-2"></i>  Edit</a></li>
+        @can('edit_purchase_order')
+        <li><a class="dropdown-item" href="#" id="contextEdit"><i class="ri-pencil-fill me-2"></i>  Edit</a></li>
         @endcan
 
         @can('read_purchase_order')
-            <li><a class="dropdown-item" href="#" id="contextView"><i class="ri-eye-fill me-2"></i> View</a></li>
-            <li><a class="dropdown-item" href="#" id="contextApproval"><i class="fa fa-list me-2"></i> Item Details</a></li>
+        <li><a class="dropdown-item" href="#" id="contextView"><i class="ri-eye-fill me-2"></i> View</a></li>
+        <li><a class="dropdown-item" href="#" id="contextApproval"><i class="fa fa-list me-2"></i> Item Details</a></li>
         @endcan
 
         <li>
@@ -97,7 +97,7 @@
                         </div>
 
 
-                         <div class="w-50">
+                        <div class="w-50">
                             <div class="search-box">
                                 <div class="m-0 form-group{{ $errors->has('filter_item_name') ? ' has-error' : '' }}">
                                     {{ html()->search('filter_item_name')->class('form-control onKeyup')->id('filterItemName')->placeholder('Item Name') }}
@@ -124,6 +124,13 @@
                                     <small class="text-danger">{{ $errors->first('filter_po_date') }}</small>
                                 </div>
                                 <i class="ri-search-line search-icon"></i>
+                            </div>
+                        </div>
+
+                        <div style="width:120px;">
+                            <div class="m-0 form-group{{ $errors->has('filter__length') ? ' has-error' : '' }}">
+                                {{ html()->select('filter__length', [25 => 25, 50 => 50, 100 => 100, 150 => 150, 200 => 200], 25)->id('filterLength')->class('form-control onChange js-choice') }}
+                                <small class="text-danger">{{ $errors->first('filter__length') }}</small>
                             </div>
                         </div>
 
@@ -190,6 +197,7 @@
                         d.item_name  = $('#filterItemName').val();
                         d.item_size  = $('#filterItemSize').val();
                         d.po_date    = $('#filterPODate').val();
+                        d.length = $('#filterLength').val();
                     }
 
                 },
@@ -250,7 +258,7 @@
                 handleContextMenuRestrictions(data);
             });
 
-        
+
 
 
 
@@ -320,7 +328,7 @@
                 }
             });
 
-           getClient('#filterClient', false, 'Choose Client'); 
+            getClient('#filterClient', false, 'Choose Client'); 
 
 
 
@@ -398,7 +406,7 @@
                     .css('opacity', 0.5);
                 }
             }
- 
+
         });
 
 
@@ -407,4 +415,4 @@
 
     
 
-            @endpush
+    @endpush

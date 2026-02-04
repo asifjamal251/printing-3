@@ -22,7 +22,7 @@ class PaperCuttingResource extends JsonResource
         return [
             'sn'        => ++$request->start,
             'id'        => $this->id,
-            'job'       => $this->jobCard->set_number,
+            'job'       => '<a href="'.route('admin.job-card.show', $this->jobCard->id).'">'.$this->jobCard->set_number.'</a>',
             'sheet_size'=> $this->jobCard->sheet_size,
             'items' => tableJobCardItems($this->job_card_id),
 

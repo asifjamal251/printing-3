@@ -25,7 +25,7 @@
 
 <ul id="customContextMenu" class="p-0 dropdown-menu dropdown-menu dropdownmenu-secondary" style="min-width:200pxdisplay:none; position:absolute; z-index: 10000;">
     <li>
-        <a class="dropdown-item create" model-size="modal-lg" data-url="{{route('admin.order-sheet.export.form')}}" data-title="Export {{Str::title(str_replace('-', ' ', request()->segment(2)))}}" href="javascript:void(0)" id="contextExport"><i class="mdi mdi-export-variant me-2"></i> Export</a>
+        <a class="dropdown-item create" model-size="modal-md" data-url="{{route('admin.order-sheet.export.form')}}" data-title="Export {{Str::title(str_replace('-', ' ', request()->segment(2)))}}" href="javascript:void(0)" id="contextExport"><i class="mdi mdi-export-variant me-2"></i> Export</a>
     </li>
 
 
@@ -136,6 +136,13 @@
                             </div>
                         </div>
 
+                        <div style="width:120px;">
+                            <div class="m-0 form-group{{ $errors->has('filter__length') ? ' has-error' : '' }}">
+                                {{ html()->select('filter__length', [25 => 25, 50 => 50, 100 => 100, 150 => 150, 200 => 200], 25)->id('filterLength')->class('form-control onChange js-choice') }}
+                                <small class="text-danger">{{ $errors->first('filter__length') }}</small>
+                            </div>
+                        </div>
+
 
                     </div>
                 </div>
@@ -233,6 +240,7 @@
                     d.item_size = $('#filterItemSize').val();
                     d.set_no    = $('#filterItemSetNo').val();
                     d.status    = $('#filterStatus').val();
+                    d.length = $('#filterLength').val();
                 }
 
             },

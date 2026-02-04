@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\ModuleExport;
 use App\Http\Controllers\Controller;
 use App\Models\Carton;
 use App\Models\City;
@@ -23,6 +24,8 @@ use App\Models\State;
 use App\Models\Stock;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CommonController extends Controller{
 
@@ -65,53 +68,53 @@ class CommonController extends Controller{
 
 
 
-public function clientListCartonRate(Request $request)
-{
-    if (!$request->ajax()) {
-        return response()->json(['message' => 'Invalid request'], 400);
-    }
+    public function clientListCartonRate(Request $request)
+    {
+        if (!$request->ajax()) {
+            return response()->json(['message' => 'Invalid request'], 400);
+        }
 
-    $page = max((int)$request->page, 1);
-    $resultCount = 15;
-    $offset = ($page - 1) * $resultCount;
+        $page = max((int)$request->page, 1);
+        $resultCount = 15;
+        $offset = ($page - 1) * $resultCount;
 
-    $term = $request->term ?? '';
-    $statusId = (int) ($request->status_id ?? 1);
-    $type = $request->type ?? 'mkdt';
+        $term = $request->term ?? '';
+        $statusId = (int) ($request->status_id ?? 1);
+        $type = $request->type ?? 'mkdt';
 
-    $clientIdsQuery = JobCardItem::query()
+        $clientIdsQuery = JobCardItem::query()
         ->join('items', 'items.id', '=', 'job_card_items.item_id')
         ->where('job_card_items.status_id', $statusId);
 
-    if ($type === 'mfg') {
-        $clientIdsQuery->whereNotNull('items.mfg_by')
+        if ($type === 'mfg') {
+            $clientIdsQuery->whereNotNull('items.mfg_by')
             ->select('items.mfg_by as client_id');
-    } else {
-        $clientIdsQuery->whereNotNull('items.mkdt_by')
+        } else {
+            $clientIdsQuery->whereNotNull('items.mkdt_by')
             ->select('items.mkdt_by as client_id');
-    }
+        }
 
-    $clientIds = $clientIdsQuery->distinct()->pluck('client_id')->filter()->toArray();
+        $clientIds = $clientIdsQuery->distinct()->pluck('client_id')->filter()->toArray();
 
-    $query = Client::query()
+        $query = Client::query()
         ->whereIn('id', $clientIds)
         ->where('company_name', 'LIKE', '%' . $term . '%')
         ->orderBy('company_name', 'asc');
 
-    $count = (clone $query)->count();
+        $count = (clone $query)->count();
 
-    $clients = $query->skip($offset)
+        $clients = $query->skip($offset)
         ->take($resultCount)
         ->get(['id', 'company_name as text']);
 
-    $endCount = $offset + $resultCount;
-    $morePages = $count > $endCount;
+        $endCount = $offset + $resultCount;
+        $morePages = $count > $endCount;
 
-    return response()->json([
-        "results" => $clients,
-        "pagination" => ["more" => $morePages]
-    ]);
-}
+        return response()->json([
+            "results" => $clients,
+            "pagination" => ["more" => $morePages]
+        ]);
+    }
 
     public function vendorList(Request $request){
         if ($request->ajax()) {
@@ -519,35 +522,35 @@ public function clientListCartonRate(Request $request)
 
 
     public function productList(Request $request)
-{
-    if ($request->ajax()) {
+    {
+        if ($request->ajax()) {
 
-        $page   = $request->input('page', 1);
-        $limit  = 5;
-        $offset = ($page - 1) * $limit;
-        $term   = trim($request->input('term', ''));
+            $page   = $request->input('page', 1);
+            $limit  = 5;
+            $offset = ($page - 1) * $limit;
+            $term   = trim($request->input('term', ''));
 
         // Split search term into words
-        $keywords = array_filter(explode(' ', $term));
+            $keywords = array_filter(explode(' ', $term));
 
-        $query = Product::with('productType')
+            $query = Product::with('productType')
             ->when($keywords, function ($q) use ($keywords) {
                 foreach ($keywords as $word) {
                     $q->where(function ($sub) use ($word) {
                         $sub->where('name', 'LIKE', "%{$word}%")
-                            ->orWhere('name_other', 'LIKE', "%{$word}%")
-                            ->orWhere('gsm', 'LIKE', "%{$word}%")
-                            ->orWhereHas('productType', function ($pt) use ($word) {
-                                $pt->where('name', 'LIKE', "%{$word}%");
-                            });
+                        ->orWhere('name_other', 'LIKE', "%{$word}%")
+                        ->orWhere('gsm', 'LIKE', "%{$word}%")
+                        ->orWhereHas('productType', function ($pt) use ($word) {
+                            $pt->where('name', 'LIKE', "%{$word}%");
+                        });
                     });
                 }
             })
             ->orderBy('created_at', 'asc');
 
-        $count = $query->count();
+            $count = $query->count();
 
-        $products = $query->skip($offset)
+            $products = $query->skip($offset)
             ->take($limit)
             ->get()
             ->map(function ($product) {
@@ -557,84 +560,84 @@ public function clientListCartonRate(Request $request)
                 ];
             });
 
-        return response()->json([
-            'results' => $products,
-            'pagination' => [
-                'more' => $count > ($offset + $limit)
-            ]
-        ]);
-    }
-
-    return response()->json('oops');
-}
-
-
-        public function productAttributeList(Request $request){
-            if (!$request->ajax()) {
-                return response()->json(['message' => 'Invalid request'], 400);
-            }
-
-            $page = max((int) $request->page, 1);
-            $resultCount = 5;
-            $term = $request->term ?? '';
-
-            $query = ProductAttribute::where('item_per_packet', 'LIKE', '%' . $term . '%')
-            ->where('product_id', $request->product_id)
-            ->orderBy('item_per_packet', 'asc');
-
-            $role = $query->clone()
-            ->selectRaw('id, item_per_packet as text')
-            ->skip(($page - 1) * $resultCount)
-            ->take($resultCount)
-            ->get();
-
-
-            $totalCount = $query->count();
-            $morePages = ($page * $resultCount) < $totalCount;
-
             return response()->json([
-                "results" => $role,
-                "pagination" => [
-                    "more" => $morePages
+                'results' => $products,
+                'pagination' => [
+                    'more' => $count > ($offset + $limit)
                 ]
             ]);
         }
 
+        return response()->json('oops');
+    }
 
-        public function productStock(Request $request){
-           $stock = Stock::where('product_id', $request->id)->sum('quantity');
-           return response()->json([
-                "datas" => $stock,
-            ]);
+
+    public function productAttributeList(Request $request){
+        if (!$request->ajax()) {
+            return response()->json(['message' => 'Invalid request'], 400);
         }
 
+        $page = max((int) $request->page, 1);
+        $resultCount = 5;
+        $term = $request->term ?? '';
 
-        public function attriSingle(Request $request){
-            $productAttr = ProductAttribute::where('id', $request->id)->with(['stock', 'product' => function($query){
-                $query->with('unit');
-            }])->first();
-            return response()->json([
-                "datas" => $productAttr,
-            ]);
-        }
+        $query = ProductAttribute::where('item_per_packet', 'LIKE', '%' . $term . '%')
+        ->where('product_id', $request->product_id)
+        ->orderBy('item_per_packet', 'asc');
 
-        public function productSingle(Request $request){
-            $product = Product::where('id', $request->id)->with(['unit'])->first();
-            return response()->json([
-                "datas" => $product,
-            ]);
-        }
-
-        public function productMORate(Request $request){
-            $moItem = MaterialOrderItem::where('product_id', $request->id)->first();
-            return response()->json([
-                "datas" => $moItem,
-            ]);
-        }
+        $role = $query->clone()
+        ->selectRaw('id, item_per_packet as text')
+        ->skip(($page - 1) * $resultCount)
+        ->take($resultCount)
+        ->get();
 
 
+        $totalCount = $query->count();
+        $morePages = ($page * $resultCount) < $totalCount;
 
-    public function dyeList(Request $request){
+        return response()->json([
+            "results" => $role,
+            "pagination" => [
+                "more" => $morePages
+            ]
+        ]);
+    }
+
+
+    public function productStock(Request $request){
+     $stock = Stock::where('product_id', $request->id)->sum('quantity');
+     return response()->json([
+        "datas" => $stock,
+    ]);
+ }
+
+
+ public function attriSingle(Request $request){
+    $productAttr = ProductAttribute::where('id', $request->id)->with(['stock', 'product' => function($query){
+        $query->with('unit');
+    }])->first();
+    return response()->json([
+        "datas" => $productAttr,
+    ]);
+}
+
+public function productSingle(Request $request){
+    $product = Product::where('id', $request->id)->with(['unit'])->first();
+    return response()->json([
+        "datas" => $product,
+    ]);
+}
+
+public function productMORate(Request $request){
+    $moItem = MaterialOrderItem::where('product_id', $request->id)->first();
+    return response()->json([
+        "datas" => $moItem,
+    ]);
+}
+
+
+
+public function dyeList(Request $request){
     if ($request->ajax()) {
 
         $page   = $request->page ?? 1;
@@ -646,39 +649,39 @@ public function clientListCartonRate(Request $request)
         $tokens = preg_split('/[\sxX]+/', $term);
 
         $query = Dye::with(['dyeDetails.dyeLockType'])
-            ->when($term, function ($q) use ($term, $tokens) {
+        ->when($term, function ($q) use ($term, $tokens) {
 
-                $q->where(function ($main) use ($term, $tokens) {
+            $q->where(function ($main) use ($term, $tokens) {
 
-                    /* 🔹 Text match (dye number) */
-                    $main->where('dye_number', 'LIKE', "%{$term}%");
+                /* 🔹 Text match (dye number) */
+                $main->where('dye_number', 'LIKE', "%{$term}%");
 
-                    /* 🔹 Dimension & numeric matching */
-                    $main->orWhereHas('dyeDetails', function ($sub) use ($tokens) {
+                /* 🔹 Dimension & numeric matching */
+                $main->orWhereHas('dyeDetails', function ($sub) use ($tokens) {
 
-                        foreach ($tokens as $value) {
+                    foreach ($tokens as $value) {
 
-                            if (is_numeric($value)) {
-                                $num = (float) $value;
-                                $min = $num - 0.05;
-                                $max = $num + 0.05;
+                        if (is_numeric($value)) {
+                            $num = (float) $value;
+                            $min = $num - 0.05;
+                            $max = $num + 0.05;
 
-                                $sub->where(function ($d) use ($min, $max) {
-                                    $d->whereBetween('length', [$min, $max])
-                                      ->orWhereBetween('width',  [$min, $max])
-                                      ->orWhereBetween('height', [$min, $max]);
-                                });
-                            }
+                            $sub->where(function ($d) use ($min, $max) {
+                                $d->whereBetween('length', [$min, $max])
+                                ->orWhereBetween('width',  [$min, $max])
+                                ->orWhereBetween('height', [$min, $max]);
+                            });
                         }
-                    });
-
-                    /* 🔹 Lock type search */
-                    $main->orWhereHas('dyeDetails.dyeLockType', function ($lock) use ($term) {
-                        $lock->where('type', 'LIKE', "%{$term}%");
-                    });
+                    }
                 });
-            })
-            ->orderBy('dye_number', 'asc');
+
+                /* 🔹 Lock type search */
+                $main->orWhereHas('dyeDetails.dyeLockType', function ($lock) use ($term) {
+                    $lock->where('type', 'LIKE', "%{$term}%");
+                });
+            });
+        })
+        ->orderBy('dye_number', 'asc');
 
         $count = $query->count();
 
@@ -687,16 +690,16 @@ public function clientListCartonRate(Request $request)
         $results = $dyes->map(function ($dye) {
 
             $sizes = $dye->dyeDetails
-                ->map(fn ($d) => $d->carton_size)
-                ->filter()
-                ->unique()
-                ->implode(', ');
+            ->map(fn ($d) => $d->carton_size)
+            ->filter()
+            ->unique()
+            ->implode(', ');
 
             $lockType = $dye->dyeDetails
-                ->pluck('dyeLockType.type')
-                ->filter()
-                ->unique()
-                ->implode(', ');
+            ->pluck('dyeLockType.type')
+            ->filter()
+            ->unique()
+            ->implode(', ');
 
             return [
                 'id'   => $dye->id,
@@ -715,12 +718,39 @@ public function clientListCartonRate(Request $request)
     return response()->json('oops');
 }
 
-        public function dyeSingle(Request $request){
-            $dye = Dye::where('id', $request->id)->with(['items'])->first();
-            return response()->json([
-                "datas" => $dye,
-            ]);
-        }
+public function dyeSingle(Request $request){
+    $dye = Dye::where('id', $request->id)->with(['items'])->first();
+    return response()->json([
+        "datas" => $dye,
+    ]);
+}
 
 
+
+
+    public function exportModule(Request $request){
+        $filters = $request->only([
+            'filter_job_no',
+            'filter_item_name',
+            'filter_operator',
+            'filter_status',
+            'module',
+        ]);
+
+        $filename = $request->module . '.xlsx';
+
+        Excel::store(
+            new ModuleExport($filters),
+            'excel/' . $filename,
+            'public'
+        );
+
+        return response()->json([
+            'message'  => 'Exported successfully.',
+            'filename' => asset('storage/excel/' . $filename),
+            'class'    => 'success'
+        ]);
     }
+
+
+}

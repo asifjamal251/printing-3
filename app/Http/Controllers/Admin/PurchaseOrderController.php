@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Exports\PurchaseOrderExport;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Admin\PurchaseOrderItem\PurchaseOrderItemCollection;
 use App\Http\Resources\Admin\PurchaseOrder\PurchaseOrderCollection;
 use App\Models\Foil;
 use App\Models\Item;
@@ -772,5 +773,53 @@ public function export(Request $request){
         'class'    => 'success'
     ]);
 }
+
+
+
+
+    public function allPOItems(Request $request){
+        if ($request->ajax()) {
+            $datas = PurchaseOrderItem::orderBy('id', 'desc');
+
+            if ($request->filled('client')) {
+                $datas->whereHas('item', function ($q) use ($request) {
+                    $q->where('mkdt_by', $request->client);
+                });
+            }
+
+            if ($request->filled('mkdt_by')) {
+                $datas->whereHas('item', function ($q) use ($request) {
+                    $q->where('mkdt_by', $request->mkdt_by);
+                });
+            }
+
+            if ($request->filled('mfg_by')) {
+                $datas->whereHas('item', function ($q) use ($request) {
+                    $q->where('mfg_by', $request->mfg_by);
+                });
+            }
+
+            if ($request->filled('item_name')) {
+                $datas->where('item_name', 'LIKE', '%'.$request->item_name.'%');
+            }
+
+
+            if ($request->filled('item_size')) {
+                $datas->where('item_size', 'LIKE', '%'.$request->item_size.'%');
+            }
+
+            $status = $request->input('status');
+            if ($status) {
+                $datas->where('status_id', $status);
+            }
+
+            $totaldata = $datas->count();
+            $request->merge(['recordsTotal' => $totaldata, 'length' => $request->length]);
+            $datas = $datas->limit($request->length)->offset($request->start)->get();
+            return response()->json(new PurchaseOrderItemCollection($datas));
+        }
+        return view('admin.purchase-order.all-po-items');
+    }
+
 
 }

@@ -138,6 +138,8 @@ Route::middleware(['admin.auth', '2fa', 'check.admin.ip', 'login.time'])->group(
         Route::get('common/product/attribute/list', 'productAttributeList')->name('product.attribute.list');
         Route::get('common/product/attribute/single', 'attriSingle')->name('product.attribute.single');
         Route::get('common/product/mo/rate', 'productMORate')->name('product.mo.rate');
+
+        Route::post('common/export/module', 'exportModule')->name('export.module');
     });
 
      //Excell Download
@@ -498,7 +500,16 @@ Route::middleware(['admin.auth', '2fa', 'check.admin.ip', 'login.time'])->group(
         Route::get('purchase-order/sxport/form', 'exportForm')->name('purchase-order.export.form');
         Route::post('purchase-order/export', 'export')->name('purchase-order.export');
 
+
+        Route::match(['get','patch'],'all-po-items', 'allPOItems')->name('all-po-items.index')->middleware('can:browse_all_po_items');
+        Route::post('all-po-items/export', 'allPOItemsExport')->name('all-po-items.export')->middleware('can:browse_all_po_items');
+
     });
+
+
+
+
+
 
 
     //OrderSheet

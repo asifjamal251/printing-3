@@ -49,6 +49,12 @@ class JobCardController extends Controller
             $datas->where('status_id', $request->status);
         }
 
+        if ($request->filled('operator')) {
+            $datas->whereHas('printing', function ($q) use ($request) {
+                $q->where('operator_id', $request->operator);
+            });
+        }
+
         if (
             $request->filled('mkdt_by') ||
             $request->filled('mfg_by') ||

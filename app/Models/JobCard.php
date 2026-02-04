@@ -85,6 +85,11 @@ class JobCard extends Model
         return $this->hasMany(JobCardItem::class);
     }
 
+    public function printing()
+    {
+        return $this->hasOne(Printing::class);
+    }
+
 
 
     // 🔹 (Optional) A Job Card may have related ItemProcessDetails through JobCardItems

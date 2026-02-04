@@ -76,7 +76,7 @@
 
 
 
-            <div class="row">
+            <div class="d-flex gap-2">
 
                 {{-- <div class="w-75">
                     <div class="m-0 form-group{{ $errors->has('filter_mfg_by') ? ' has-error' : '' }}">
@@ -93,7 +93,7 @@
                     </div>
                 </div> --}}
 
-                <div class="col-md-3 col-sm-12">
+                <div class="w-50">
                     <div class="search-box">
                         <div class="m-0 form-group{{ $errors->has('filter_job_no') ? ' has-error' : '' }}">
                             {{ html()->search('filter_job_no')->class('form-control onKeyup')->id('filterJobNo')->placeholder('Job No.') }}
@@ -104,7 +104,7 @@
                 </div>
 
 
-                <div class="col-md-3 col-sm-12">
+                <div class="w-50">
                     <div class="search-box">
                         <div class="m-0 form-group{{ $errors->has('filter_item_name') ? ' has-error' : '' }}">
                             {{ html()->search('filter_item_name')->class('form-control onKeyup')->id('filterItemName')->placeholder('Item Name') }}
@@ -114,11 +114,18 @@
                     </div>
                 </div>
 
+                <div class="w-50">
+                    <div class="m-0 form-group{{ $errors->has('filter_operator') ? ' has-error' : '' }}">
+                        {{ html()->select('filter_operator', App\Models\Operator::orderBy('name', 'asc')->where('module_id', 2)->pluck('name', 'id'))->id('filterOperator')->class('form-control onChange js-choice')->placeholder('Choose Operator') }}
+                        <small class="text-danger">{{ $errors->first('filter_operator') }}</small>
+                    </div>
+                </div>
 
 
-                <div class="col-md-3 col-sm-12">
+
+                <div class="w-50">
                     <div class="m-0 form-group{{ $errors->has('filterStatus') ? ' has-error' : '' }}">
-                        {{ html()->select('filterStatus', App\Models\Status::whereIn('id', [1,3,5,23,25,26,26,28,29,30,31,32,33])->pluck('name', 'id'))->id('filterStatus')->class('form-control js-choice onChange')->placeholder('Status') }}
+                        {{ html()->select('filter_tatus', App\Models\Status::whereIn('id', [1,3,5,23,25,26,26,28,29,30,31,32,33])->pluck('name', 'id'))->id('filterStatus')->class('form-control js-choice onChange')->placeholder('Status') }}
                         <small class="text-danger">{{ $errors->first('filterStatus') }}</small>
                     </div>
                 </div>
@@ -196,6 +203,7 @@
                     d.status = $('#filterStatus').val();
                     d.set_no = $('#filterJobNo').val();
                     d.length = $('#filterLength').val();
+                    d.operator = $('#filterOperator').val();
                 }
 
             },
